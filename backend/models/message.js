@@ -1,42 +1,40 @@
 const { getDb } = require('../config/db');
 
-// Save a message to MongoDB
+// Function to save a message to the database
 const saveMessage = async (from, to, message) => {
   try {
     const db = getDb();
-    const collection = db.collection('messages');
-    const newMessage = {
-      from,
-      to,
-      message,
-      timestamp: new Date(),
-    };
-
-    await collection.insertOne(newMessage);
-    console.log('Message saved to database');
-  } catch (error) {
-    console.error('Error saving message:', error);
+    const messagesCollection = db.collection('messages');
+    
+    const timestamp = new Date();
+    const messageDoc = { from, to, message, timestamp };
+    
+    await messagesCollection.insertOne(messageDoc);
+    console.log('Message saved');
+  } catch (err) {
+    console.error('Error saving message:', err);
   }
 };
 
-// Get chat history between two users
+// Function to get messages between two users
 const getMessages = async (user1, user2) => {
   try {
     const db = getDb();
-    const collection = db.collection('messages');
-    const messages = await collection
+    const messagesCollection = db.collection('messages');
+    
+    const messages = await messagesCollection
       .find({
         $or: [
           { from: user1, to: user2 },
           { from: user2, to: user1 },
         ],
       })
-      .sort({ timestamp: 1 }) // Sorting messages by timestamp in ascending order
+      .sort({ timestamp: 1 }) // Sort messages by timestamp
       .toArray();
-
+    
     return messages;
-  } catch (error) {
-    console.error('Error fetching messages:', error);
+  } catch (err) {
+    console.error('Error retrieving messages:', err);
     return [];
   }
 };

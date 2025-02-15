@@ -1,0 +1,64 @@
+.chat-container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-right: 1px solid #ccc;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+}
+
+.friend {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+}
+
+.friend:hover {
+  background-color: #e0e0e0;
+}
+
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.chat-panel .header {
+  margin-bottom: 20px;
+}
+
+.messages {
+  flex: 1;
+  margin-bottom: 20px;
+  overflow-y: scroll;
+}
+
+.message {
+  margin: 5px 0;
+}
+
+.message.sent {
+  text-align: right;
+}
+
+.message.received {
+  text-align: left;
+}
+
+.message-input input {
+  width: 100%;
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.message-input button {
+  padding: 10px 20px;
+}

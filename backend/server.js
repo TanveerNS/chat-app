@@ -3,70 +3,81 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const { connectDB } = require('./config/db');
-const { saveMessage, getMessages } = require('./models/Message'); // Import Message model
-
+const { registerUser, getFriendList, addFriend } = require('./models/User');
+const { saveMessage, getMessages } = require('./models/Message');
 require('dotenv').config();
 
-// Initialize express app
 const app = express();
 const server = http.createServer(app);
-
-// Initialize Socket.IO
+connectDB()
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Frontend URL
-    methods: ["GET", "POST"],
+    origin: '*',
+    methods: ['GET', 'POST'],
     credentials: true,
-  }
+  },
 });
 
-// Connect to MongoDB
-connectDB(); // Connect to MongoDB
-
 // Store users and their socket IDs
-let users = {};
+let users = {}; // Maps usernames to socket IDs
 
 // Socket.IO Connection event
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  // Register user with their socket ID
-  socket.on('register', (username) => {
+  socket.on('register', async (username) => {
     users[username] = socket.id;
+    await registerUser(username); // Register the user in the database
     console.log(`User ${username} registered with socket ID: ${socket.id}`);
 
-    // Retrieve chat history when a user connects
-    socket.on('getChatHistory', async (user2) => {
-      const messages = await getMessages(username, user2);
-      socket.emit('chatHistory', messages);
-    });
+    // Send the user's friend list
+    const friends = await getFriendList(username);
+    io.to(socket.id).emit('friendList', friends);
   });
 
-  // Handle receiving a message
+  // Add a friend to the user's friend list
+  socket.on('addFriend', async (data) => {
+    const { username, friend } = data;
+    await addFriend(username, friend);
+    
+    // Update both users' friend lists
+    const updatedFriends = await getFriendList(username);
+    const friendSocketId = users[friend];
+    if (friendSocketId) {
+      io.to(friendSocketId).emit('friendList', updatedFriends);
+    }
+    
+    io.to(users[username]).emit('friendList', updatedFriends);
+    console.log(`Friend ${friend} added to ${username}`);
+  });
+
+  // Handle sending a message
   socket.on('sendMessage', async (data) => {
     const { from, to, message } = data;
-    console.log(`Message from ${from} to ${to}: ${message}`);
-
-    // Save message to the database
     await saveMessage(from, to, message);
 
-    // Check if the recipient exists
-    if (users[to]) {
-      // Send message to the recipient
-      io.to(users[to]).emit('receiveMessage', { from, message });
-      console.log(`Message sent to ${to}`);
+    // Send the message to the other user
+    const receiverSocketId = users[to];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit('receiveMessage', { from, message });
     }
 
-    // Send the message back to the sender (User1) to display in their panel
-    if (users[from]) {
-      io.to(users[from]).emit('receiveMessage', { from, message });
-      console.log(`Message sent back to ${from}`);
+    const senderSocketId = users[from];
+    if (senderSocketId) {
+      io.to(senderSocketId).emit('receiveMessage', { from, message });
     }
   });
 
-  // Handle disconnect
+  // Fetch message history when user connects or selects a friend
+  socket.on('getMessageHistory', async (data) => {
+    const { user1, user2 } = data;
+    const messages = await getMessages(user1, user2);
+    io.to(users[user1]).emit('messageHistory', messages);
+    io.to(users[user2]).emit('messageHistory', messages);
+  });
+
+  // Handle user disconnect
   socket.on('disconnect', () => {
-    // Remove user from the users object
     for (const [username, socketId] of Object.entries(users)) {
       if (socketId === socket.id) {
         delete users[username];
@@ -77,7 +88,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Set server to listen on a port
+// Set the server to listen on a port
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

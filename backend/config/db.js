@@ -19,6 +19,10 @@ const connectDB = async () => {
 };
 
 // Get the MongoDB database instance
-const getDb = () => db;
-
+const getDb = () => {
+  if (!db) {
+    throw new Error('Database not initialized');
+  }
+  return db;
+};
 module.exports = { connectDB, getDb };
