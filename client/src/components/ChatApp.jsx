@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
-const ChatApp = () => {
+const ChatApp = ({username}) => {
   const [socket, setSocket] = useState(null);
-  const [username, setUsername] = useState('');
+  // const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [friendList, setFriendList] = useState([]);
@@ -16,6 +16,8 @@ const ChatApp = () => {
       console.log('Connected to server');
       setSocket(socketIo);
     });
+
+    socketIo.emit('register', username);
 
     socketIo.on('friendList', (friends) => {
       setFriendList(friends);
@@ -34,11 +36,11 @@ const ChatApp = () => {
     };
   }, [username]);
 
-  const handleRegister = () => {
-    if (socket && username) {
-      socket.emit('register', username);
-    }
-  };
+  // const handleRegister = () => {
+  //   // if (socket && username) {
+  //   //   socket.emit('register', username);
+  //   // }
+  // };
 
   const handleSendMessage = () => {
     if (socket && username && selectedFriend && message) {
@@ -62,12 +64,12 @@ const ChatApp = () => {
   return (
     <div className="chat-container">
       <div className="sidebar">
-        <input
+        {/* <input
           type="text"
           placeholder="Enter username"
           onChange={(e) => setUsername(e.target.value)}
         />
-        <button type="button" onClick={handleRegister}>Register</button>
+        <button type="button" onClick={handleRegister}>Register</button> */}
         <h2>Friends</h2>
         {friendList.length > 0 ? (
           friendList.map((friend, index) => (
