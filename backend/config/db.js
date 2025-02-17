@@ -1,4 +1,3 @@
-// config/db.js
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
@@ -18,7 +17,6 @@ const connectDB = async () => {
   }
 };
 
-// Get the MongoDB database instance
 const getDb = () => {
   if (!db) {
     throw new Error('Database not initialized');

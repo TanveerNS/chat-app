@@ -1,6 +1,5 @@
 const { getDb } = require('../config/db');
 
-// Save a new message to MongoDB
 const saveMessage = async (user, messageText) => {
   try {
     const db = getDb();
@@ -17,7 +16,6 @@ const saveMessage = async (user, messageText) => {
   }
 };
 
-// Get all messages from MongoDB
 const getMessages = async () => {
   try {
     const db = getDb();

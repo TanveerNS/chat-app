@@ -4,7 +4,6 @@ const sendResponse = require('../utils/response');
 
 const router = express.Router();
 
-// Route to get all chat messages (GET request)
 router.get('/messages', async (req, res) => {
   try {
     const messages = await getMessages();
@@ -14,11 +13,9 @@ router.get('/messages', async (req, res) => {
   }
 });
 
-// Route to send a new message (POST request)
 router.post('/messages', async (req, res) => {
   const { user, message } = req.body;
   try {
-    // Save the message
     await saveMessage(user, message);
     sendResponse(res, 200, 'Message saved successfully');
   } catch (error) {

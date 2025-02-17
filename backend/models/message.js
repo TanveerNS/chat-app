@@ -1,6 +1,5 @@
 const { getDb } = require('../config/db');
 
-// Function to save a message to the database
 const saveMessage = async (from, to, message) => {
   try {
     const db = getDb();
@@ -16,7 +15,6 @@ const saveMessage = async (from, to, message) => {
   }
 };
 
-// Function to get messages between two users
 const getMessages = async (user1, user2) => {
   try {
     const db = getDb();
@@ -29,7 +27,7 @@ const getMessages = async (user1, user2) => {
           { from: user2, to: user1 },
         ],
       })
-      .sort({ timestamp: 1 }) // Sort messages by timestamp
+      .sort({ timestamp: 1 }) 
       .toArray();
     
     return messages;
